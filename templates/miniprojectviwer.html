@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스마트 홈 시스템</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.2/mqttws31.min.js" type="text/javascript"></script>
+    <script src="./static/mqttio.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" type="text/javascript"></script>
+    <script src="./static/image.js" type="text/javascript"></script>
+    <script src="./static/myChart.js" type="text/javascript"></script>
+    <script src="./static/danger.js" type="text/javascript"></script>
+    <script src="./static/weather.js" type="text/javascript"></script>
+    <script>
+        window.addEventListener("load", function () {
+            var url = new String(document.location);
+            ip = (url.split("//"))[1];
+            ip = (ip.split(":"))[0];
+            document.getElementById("broker").value = ip;
+        });
+    </script>
+    <style>
+        body {
+            background-color: #f2f2f2;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: white;
+        }
+
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            vertical-align: top;
+        }
+
+        h3 {
+            color: #333;
+        }
+
+        canvas {
+            background-color: lightblue;
+        }
+
+        #rainInfo{
+            display: none;
+        }
+
+        #weatherInfo{
+            display: block;
+        }
+
+        /* Additional style for dangerInfo */
+        #dangerInfo { 
+            display: none; /* 초기에는 숨김 */
+            background-color: #ff9999;
+            padding: 10px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>📱스마트 홈 시스템🏠</h1>
+    <table>
+        <tr>
+            <td>
+                <h3> 📷CCTV📷 </h3>
+                <hr>
+                <form id="connection-form">
+                    <b>브로커 IP:</b>
+                    <input id="broker" type="text" name="broker" value=""><br>
+                    <b>포트 번호: 8080</b><br>
+                    <input type="button" onclick="startConnect()" value="Connect">
+                    <input type="button" onclick="startDisconnect()" value="Disconnect">
+                </form>
+            </td>
+            <td>
+                <h3>원격 제어</h3>
+                <hr>
+                <form id="LED-control-form">
+                    <label>💡켜기 <input type="radio" id="ledOn" name="led" value="1" onclick="return publish('led', this.value)"></label>
+                    <label>💡끄기 <input type="radio" id="ledOff" name="led" value="0" checked onclick="return publish('led', this.value)"><br><br></label>
+                </form>
+                <form id="buzzer-control-form">
+                    <label>🧿부저 켜기🧿<input type="button" onclick="return publish('buzzer',this.value)" value="1"></label>
+                    <br>
+                </form>
+                <div id="dangerInfo">🔥🔥화재 주의 🔥🔥</div>
+            </td>
+            <td>
+                <h3>🕖실시간 정보🕖</h3>
+                <hr>
+                <form id="subscribe-form">
+                    <input type="button" onclick="startCamera()" value="스마트홈 시작">
+                    <input type="button" onclick="stopCamera()" value="스마트홈 중지">
+                    <br>
+                    <br>
+                </form>
+                <form id="hideshow-form">
+                    <input type="button" onclick="hideshow()" value="Hide/Show Chart">
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <canvas id="myCanvas" width="480" height="320"></canvas>
+            </td>
+            <td>
+                <div id="messages"></div>
+            </td>
+            <td>
+                <canvas id="canvas" width="480" height="320"></canvas>
+                <div id="messages"></div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <h3>💧⚡오늘의 날씨❄☀</h3>
+                <hr>
+                <form id="weather-form">
+                    <input type="button" onclick="showWeather()" value="상세정보">
+                </form>
+                <div id="weatherInfo">
+		</div>
+                <div id="rainInfo">
+                <img id="weather-image" src="" alt="Weather Image">
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
